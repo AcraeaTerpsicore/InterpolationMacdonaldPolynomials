@@ -20,6 +20,18 @@ InterpolationASEPFamily::usage =
 InterpolationMacdonaldPolynomial::usage =
   "InterpolationMacdonaldPolynomial[lambda, vars, {q, t}] returns the interpolation Macdonald polynomial P^*_lambda.";
 
+InterpolationElementaryStar::usage =
+  "InterpolationElementaryStar[k, vars, t] returns the inhomogeneous elementary symmetric function e_k^*(vars; t) described in Section 8 (q = 1 factorisation).";
+
+InterpolationASEPPartialSum::usage =
+  "InterpolationASEPPartialSum[lambda, subset, vars, t] sums f^*_mu(vars; q = 1, t) over all permutations of lambda whose support is the given subset.";
+
+InterpolationASEPPartialProduct::usage =
+  "InterpolationASEPPartialProduct[lambda, subset, vars, t] evaluates the right-hand side of the q = 1 factorisation in Theorem 8.1 for the given subset.";
+
+InterpolationMacdonaldQOne::usage =
+  "InterpolationMacdonaldQOne[lambda, vars, t] computes P^*_lambda(vars; q = 1, t) using the factorised product of e^*_k terms.";
+
 NonsymmetricInterpolationMacdonald::arg =
   "Variable list length `2` must match the composition length `1`.";
 HeckeOperator::arg =
@@ -32,7 +44,8 @@ Begin["`Private`"];
 ClearAll[
   kVector, tildePower, compositionsExact, compositionsUpToDegree,
   monomialFromExponent, solveInterpolationSystem, permutationForOrbit,
-  permutationReducedWord, applyHeckeWord, normalizeParams];
+  permutationReducedWord, applyHeckeWord, normalizeParams, normalizeT,
+  subsetFactor, supportPermutations, partitionConjugate];
 
 kVector[mu_List] := Module[{n = Length[mu]}, Table[
     Count[mu[[;; i - 1]], _?(# > mu[[i]] &)] +
@@ -51,6 +64,9 @@ TildeVector[mu_List, q_: q, t_: t] := tildePower[mu, q, t];
 normalizeParams[Automatic] := {Symbol["q"], Symbol["t"]};
 normalizeParams[{a_, b_}] := {a, b};
 normalizeParams[_] := {Symbol["q"], Symbol["t"]};
+
+normalizeT[Automatic] := Symbol["t"];
+normalizeT[t_] := t;
 
 compositionsExact[0, 0] := {{}};
 compositionsExact[0, _Integer?Positive] := {};
@@ -164,12 +180,7 @@ permutationForOrbit[lambda_List, mu_List] := Module[
     ],
     {i, n}
   ];
-  sigma = ConstantArray[0, n];
-  Do[
-    sigma[[sigmaInv[[i]]]] = i,
-    {i, n}
-  ];
-  sigma
+  sigmaInv
 ];
 
 permutationReducedWord[perm_List] := Module[
@@ -188,6 +199,102 @@ permutationReducedWord[perm_List] := Module[
 
 applyHeckeWord[poly_, word_List, vars_, params_] :=
   Fold[HeckeOperator[#1, #2, vars, params] &, poly, word];
+
+subsetFactor[subset_List, vars_List, tVal_] := Module[
+  {sorted = Sort[subset], n = Length[vars]},
+  Times @@ Table[
+     vars[[sorted[[j]]]] - tVal^(sorted[[j]] - n - (j - 1)),
+     {j, Length[sorted]}
+   ]
+];
+
+supportPermutations[lambda_List, subset_List] := Module[
+  {n = Length[lambda], sortedSubset = Sort[subset], positivesCount,
+   positives, zeroCount, complementLen, perms},
+  If[!SubsetQ[Range[n], sortedSubset], Return[{}]];
+  positivesCount = LengthWhile[lambda, # > 0 &];
+  positives = Take[lambda, positivesCount];
+  zeroCount = n - positivesCount;
+  complementLen = n - Length[sortedSubset];
+  If[Length[sortedSubset] =!= positivesCount || complementLen =!= zeroCount,
+    Return[{}]
+  ];
+  perms = DeleteDuplicates[Permutations[positives]];
+  Table[
+    With[{perm = perms[[idx]]},
+      Module[{mu = ConstantArray[0, n]},
+        Do[
+          mu[[sortedSubset[[j]]]] = perm[[j]],
+          {j, Length[sortedSubset]}
+        ];
+        mu
+      ]
+    ],
+    {idx, Length[perms]}
+  ]
+];
+
+partitionConjugate[lambda_List] := Module[
+  {max = If[lambda === {}, 0, Max[lambda]]},
+  Table[Count[lambda, _?(# >= r &)], {r, 1, max}]
+];
+
+(* -- q = 1 factorisation utilities ---------------------------------------- *)
+
+InterpolationElementaryStar[k_Integer?NonNegative, vars_List, tSym_: Automatic] :=
+  Module[{n = Length[vars], tVal = normalizeT[tSym]},
+    Which[
+      k < 0 || k > n, 0,
+      True,
+      Total[
+        subsetFactor[#, vars, tVal] & /@ Subsets[Range[n], {k}]
+      ]
+    ]
+  ];
+
+InterpolationASEPPartialSum[lambda_List, subset_List, vars_: Automatic, tSym_: Automatic] :=
+  Module[{varList = Replace[vars, Automatic :> Array[x, Length[lambda]]],
+    tVal = normalizeT[tSym], mus, sums, n, positivesCount, zeroCount,
+    complementLen},
+    n = Length[varList];
+    positivesCount = LengthWhile[lambda, # > 0 &];
+    zeroCount = n - positivesCount;
+    complementLen = n - Length[subset];
+    If[Length[subset] =!= positivesCount || complementLen =!= zeroCount,
+      Return[0]
+    ];
+    mus = supportPermutations[lambda, subset];
+    sums = InterpolationASEP[#, varList, {1, tVal}] & /@ mus;
+    Expand[Total[sums]]
+  ];
+
+InterpolationASEPPartialProduct[lambda_List, subset_List, vars_: Automatic, tSym_: Automatic] :=
+  Module[{varList = Replace[vars, Automatic :> Array[x, Length[lambda]]],
+    tVal = normalizeT[tSym], lambdaPrime, firstFactor, secondFactor, n,
+    positivesCount, zeroCount, complementLen},
+    n = Length[varList];
+    positivesCount = LengthWhile[lambda, # > 0 &];
+    zeroCount = n - positivesCount;
+    complementLen = n - Length[subset];
+    If[Length[subset] =!= positivesCount || complementLen =!= zeroCount,
+      Return[0]
+    ];
+    lambdaPrime = partitionConjugate[lambda];
+    firstFactor = subsetFactor[subset, varList, tVal];
+    secondFactor = If[Length[lambdaPrime] <= 1,
+      1,
+      Times @@ (InterpolationElementaryStar[#, varList, tVal] & /@ Rest[lambdaPrime])
+    ];
+    Expand[firstFactor*secondFactor]
+  ];
+
+InterpolationMacdonaldQOne[lambda_List, vars_: Automatic, tSym_: Automatic] :=
+  Module[{varList = Replace[vars, Automatic :> Array[x, Length[lambda]]],
+    tVal = normalizeT[tSym], lambdaPrime, factors},
+    lambdaPrime = partitionConjugate[lambda];
+    factors = InterpolationElementaryStar[#, varList, tVal] & /@ lambdaPrime;
+    Expand[If[factors === {}, 1, Times @@ factors]]
+  ];
 
 (* -- interpolation ASEP and Macdonald polynomials ------------------------- *)
 
