@@ -4,6 +4,12 @@ vars2 = Array[x, 2];
 vars3 = Array[x, 3];
 
 zeroQ[expr_] := TrueQ[PossibleZeroQ[Simplify[expr]]];
+tDenominatorQ[den_] := den === 1 ||
+   Module[{vars = Variables[den], exp},
+     vars === {t} && (exp = Exponent[den, t]; exp >= 0 &&
+        TrueQ[Simplify[den/t^exp] == 1])
+   ];
+noDenomQ[expr_] := tDenominatorQ[Denominator[Together[expr]]];
 
 test1 = zeroQ[InterpolationASEP[{0, 0}, vars2] - 1];
 test2 = zeroQ[
@@ -47,7 +53,15 @@ test9 = zeroQ[
    InterpolationElementaryStar[1, vars2, t] -
      ((vars2[[1]] - t^(-1)) + (vars2[[2]] - 1))];
 
-results = {test1, test2, test3, test4, test5, test6, test7, test8, test9};
+test10 = zeroQ[
+   HookProduct[{1}, {q, t}] - (1 - t)];
+
+test11 = noDenomQ[IntegralInterpolationMacdonald[{1, 1}, vars2]];
+
+test12 = noDenomQ[IntegralInterpolationASEP[{1, 0}, vars2]];
+
+results = {test1, test2, test3, test4, test5, test6, test7, test8, test9,
+   test10, test11, test12};
 
 If[AllTrue[results, TrueQ],
   Print["TESTS PASSED"],

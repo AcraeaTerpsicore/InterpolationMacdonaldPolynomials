@@ -49,9 +49,14 @@ The package now exposes the factorisation tools from Section 8 of the reference 
 - `InterpolationASEPPartialSum[lambda, subset, vars, t]` forms the $q=1$ partial sum over the orbit, while `InterpolationASEPPartialProduct[...]` returns the factorised expression from Theorem 8.1.
 - `InterpolationMacdonaldQOne[lambda, vars, t]` recovers $P^*_\lambda$ via the product of $e^*_k$ terms.
 
+## Integral Forms
+
+- `HookProduct[lambda, {q, t}]` computes the hook normalisation $\hook_\lambda$.
+- `IntegralInterpolationMacdonald[lambda, vars, {q, t}]` returns $J^*_\lambda$.
+- `IntegralInterpolationASEP[mu, vars, {q, t}]` multiplies $f^*_\mu$ by the same hook factor.
+
 ## Future Extensions
 
 - Implement explicit signed multiline queue enumerators, including ball and pairing weights, so the package can sample and sum over queue configurations directly.
 - Encode the algebraic/combinatorial recursion for $f^*_\mu$ described in Sections 4–6 to compute higher-rank polynomials iteratively.
 - Provide the signed queue tableaux model (Section 7) together with translation utilities between tableaux and multiline queues.
-- Add the integral-form normalisation and hook product factors to expose $J_\lambda^*$ and $\hook_\lambda f_\mu^*$.

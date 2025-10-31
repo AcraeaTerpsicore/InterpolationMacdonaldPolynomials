@@ -32,6 +32,15 @@ InterpolationASEPPartialProduct::usage =
 InterpolationMacdonaldQOne::usage =
   "InterpolationMacdonaldQOne[lambda, vars, t] computes P^*_lambda(vars; q = 1, t) using the factorised product of e^*_k terms.";
 
+HookProduct::usage =
+  "HookProduct[lambda, {q, t}] computes \\!\\(\\hook_\\lambda\\) for the partition lambda.";
+
+IntegralInterpolationMacdonald::usage =
+  "IntegralInterpolationMacdonald[lambda, vars, {q, t}] returns the integral form polynomial J^*_lambda.";
+
+IntegralInterpolationASEP::usage =
+  "IntegralInterpolationASEP[mu, vars, {q, t}] multiplies f^*_mu by \\!\\(\\hook_\\lambda\\) where lambda is the partition sorted from mu.";
+
 NonsymmetricInterpolationMacdonald::arg =
   "Variable list length `2` must match the composition length `1`.";
 HeckeOperator::arg =
@@ -45,7 +54,7 @@ ClearAll[
   kVector, tildePower, compositionsExact, compositionsUpToDegree,
   monomialFromExponent, solveInterpolationSystem, permutationForOrbit,
   permutationReducedWord, applyHeckeWord, normalizeParams, normalizeT,
-  subsetFactor, supportPermutations, partitionConjugate];
+  subsetFactor, supportPermutations, partitionConjugate, hookProduct];
 
 kVector[mu_List] := Module[{n = Length[mu]}, Table[
     Count[mu[[;; i - 1]], _?(# > mu[[i]] &)] +
@@ -294,6 +303,34 @@ InterpolationMacdonaldQOne[lambda_List, vars_: Automatic, tSym_: Automatic] :=
     lambdaPrime = partitionConjugate[lambda];
     factors = InterpolationElementaryStar[#, varList, tVal] & /@ lambdaPrime;
     Expand[If[factors === {}, 1, Times @@ factors]]
+  ];
+
+hookProduct[lambda_List, params_] := Module[
+  {lam = Sort[Select[lambda, # > 0 &], Greater], lamPrime, qSym, tSym},
+  If[lam === {}, Return[1]];
+  lamPrime = partitionConjugate[lam];
+  {qSym, tSym} = normalizeParams[params];
+  Expand[Times @@ Flatten[
+      Table[
+        1 - qSym^(lamPrime[[j]] - i) tSym^(lam[[i]] - j + 1),
+        {i, Length[lam]}, {j, lam[[i]]}
+      ]
+    ]]
+];
+
+HookProduct[lambda_List, params_: Automatic] :=
+  hookProduct[lambda, params];
+
+IntegralInterpolationMacdonald[lambda_List, vars_: Automatic, params_: Automatic] :=
+  Module[{normParams = normalizeParams[params]},
+    Expand[HookProduct[lambda, normParams] *
+      InterpolationMacdonaldPolynomial[lambda, vars, normParams]]
+  ];
+
+IntegralInterpolationASEP[mu_List, vars_: Automatic, params_: Automatic] :=
+  Module[{normParams = normalizeParams[params], lambda = Sort[mu, Greater]},
+    Expand[HookProduct[lambda, normParams] *
+      InterpolationASEP[mu, vars, normParams]]
   ];
 
 (* -- interpolation ASEP and Macdonald polynomials ------------------------- *)
