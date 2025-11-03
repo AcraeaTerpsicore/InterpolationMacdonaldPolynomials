@@ -56,6 +56,15 @@ SignedQueueTableauWeight::usage =
 SignedQueueTableauType::usage =
   "SignedQueueTableauType[lambda, tableau, n] determines the composition type defined in Section 7.";
 
+SignedMultilineQueueQ::usage =
+  "SignedMultilineQueueQ[queue] recognises the strand-based representation of signed multiline queues.";
+
+SignedMultilineQueueFromTableau::usage =
+  "SignedMultilineQueueFromTableau[lambda, tableau] constructs the signed multiline queue (strand data) obtained from the tableau via Tab.";
+
+SignedMultilineQueueToTableau::usage =
+  "SignedMultilineQueueToTableau[queue] reconstructs the tableau data associated with a signed multiline queue.";
+
 NonsymmetricInterpolationMacdonald::arg =
   "Variable list length `2` must match the composition length `1`.";
 HeckeOperator::arg =
@@ -74,7 +83,9 @@ ClearAll[
   tableauValue, tableauRowType, tableauLevel, tableauDownRow, tableauUpRow,
   tableauRestrictedQ, tableauUnrestrictedQ, tableauTopEntryValues,
   signedQueueTableauAttacks, signedQueueTableauMaj, signedQueueTableauCoinv,
-  signedQueueTableauEmp, signedQueueTableauNegative, signedQueueTableauStats];
+  signedQueueTableauEmp, signedQueueTableauNegative, signedQueueTableauStats,
+  SignedMultilineQueueFromTableau, SignedMultilineQueueToTableau,
+  SignedMultilineQueueQ];
 
 kVector[mu_List] := Module[{n = Length[mu]}, Table[
     Count[mu[[;; i - 1]], _?(# > mu[[i]] &)] +
@@ -725,6 +736,96 @@ SignedQueueTableauType[lambda_List, tableau_, n_Integer?Positive] :=
       {col, cols}
     ];
     result
+  ];
+
+SignedMultilineQueueFromTableau::nolambda =
+  "Unable to infer a partition from the tableau; please supply lambda explicitly.";
+
+SignedMultilineQueueFromTableau[tableau_] :=
+  (Message[SignedMultilineQueueFromTableau::nolambda]; $Failed);
+
+SignedMultilineQueueFromTableau[lambda_List, tableau_] :=
+  Module[{data = tableauData[lambda, tableau], rows = tableauRows[lambda],
+    cols = tableauColumns[lambda]},
+    If[data === $Failed, Return[$Failed]];
+    <|
+      "Lambda" -> lambda,
+      "Strands" ->
+        Table[
+          With[{entries =
+             Cases[Table[{row, data[[row, col]]}, {row, rows}],
+               {row_, val_} /; val =!= Null :>
+                 <|"Row" -> row, "Value" -> val|>]},
+            <|"Column" -> col, "Entries" -> entries|>
+          ],
+          {col, cols}
+        ]
+    |>
+  ];
+
+SignedMultilineQueueToTableau[queue_Association] :=
+  Module[{lambda = Lookup[queue, "Lambda", $Failed], rows, cols, data,
+    strands},
+    If[lambda === $Failed || !VectorQ[lambda, IntegerQ[#] && # >= 0 &],
+      Return[$Failed]
+    ];
+    rows = tableauRows[lambda];
+    cols = tableauColumns[lambda];
+    data = Table[ConstantArray[Null, cols], {rows}];
+    strands = Lookup[queue, "Strands", {}];
+    MapIndexed[
+      With[{colIndex = Lookup[#1, "Column", First[#2]],
+        entries = Lookup[#1, "Entries", {}]},
+        With[{boundedCol =
+           If[cols == 0, 1,
+             Min[Max[colIndex, 1], cols]]},
+          Scan[
+            With[{row = Lookup[#, "Row", 0], val = Lookup[#, "Value", Null]},
+              If[IntegerQ[row] && 1 <= row <= Max[rows, 1] &&
+                 val =!= Null,
+                If[rows > 0 && cols > 0,
+                  data[[row, boundedCol]] = val
+                ]
+              ]
+            ]&,
+            entries
+          ]
+        ]
+      ]&,
+      strands
+    ];
+    data
+  ];
+
+SignedMultilineQueueQ[queue_] :=
+  Module[{lambda, strands, rows, cols, structuralOK},
+    If[!AssociationQ[queue] || !KeyExistsQ[queue, "Lambda"] ||
+       !KeyExistsQ[queue, "Strands"],
+      Return[False]
+    ];
+    lambda = queue["Lambda"];
+    If[!VectorQ[lambda, IntegerQ[#] && # >= 0 &], Return[False]];
+    strands = queue["Strands"];
+    If[!ListQ[strands], Return[False]];
+    rows = tableauRows[lambda];
+    cols = tableauColumns[lambda];
+    structuralOK = And @@ MapIndexed[
+       With[{strand = #1, idx = #2[[1]]},
+         With[{col = Lookup[strand, "Column", idx],
+           entries = Lookup[strand, "Entries", {}]},
+           IntegerQ[col] &&
+           (cols == 0 || (1 <= col <= cols)) &&
+           ListQ[entries] &&
+           And @@ (AssociationQ[#] &&
+               IntegerQ[Lookup[#, "Row", 0]] &&
+               (rows == 0 || 1 <= Lookup[#, "Row", 0] <= rows) &&
+               IntegerQ[Lookup[#, "Value", 0]] & /@ entries)
+         ]
+       ]&,
+       strands
+     ];
+    If[!structuralOK, Return[False]];
+    SignedQueueTableauQ[lambda, SignedMultilineQueueToTableau[queue]]
   ];
 
 (* -- interpolation ASEP and Macdonald polynomials ------------------------- *)

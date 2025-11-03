@@ -83,8 +83,22 @@ test17 = weightSample =!= $Failed &&
    SignedQueueTableauPolynomial[lambdaSample, tableauSample, vars2] === 
     weightSample["Polynomial"];
 
+queueSample = SignedMultilineQueueFromTableau[lambdaSample, tableauSample];
+test18 = SignedMultilineQueueQ[queueSample];
+
+statsData = InterpolationMacdonald`Private`tableauData[lambdaSample, tableauSample];
+test19 = SignedMultilineQueueToTableau[queueSample] === statsData;
+
+queueRoundTrip = SignedMultilineQueueFromTableau[lambdaSample, SignedMultilineQueueToTableau[queueSample]];
+test20 = SignedMultilineQueueQ[queueRoundTrip] && queueRoundTrip === queueSample;
+
+test21 = zeroQ[
+   SignedQueueTableauPolynomial[lambdaSample, SignedMultilineQueueToTableau[queueSample], vars2] - 
+    SignedQueueTableauPolynomial[lambdaSample, tableauSample, vars2]];
+
 results = {test1, test2, test3, test4, test5, test6, test7, test8, test9,
-   test10, test11, test12, test13, test14, test15, test16, test17};
+   test10, test11, test12, test13, test14, test15, test16, test17, test18,
+   test19, test20, test21};
 
 If[AllTrue[results, TrueQ],
   Print["TESTS PASSED"],
