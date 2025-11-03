@@ -58,7 +58,7 @@ The package now exposes the factorisation tools from Section 8 of the reference 
 ## Signed Queue Tableaux
 
 - `SignedQueueTableauQ[lambda, tableau]` validates the doubled-diagram filling against the rules in Section 7.
-- `SignedQueueTableauStatistics[lambda, tableau, {q, t}]` exposes $\maj$, $\coinv$, $\emp$, and the negative count together with unrestricted cells.
+- `SignedQueueTableauStatistics[lambda, tableau, {q, t}]` exposes $\text{maj}$, $\text{coinv}$, $\text{emp}$, and the negative count together with unrestricted cells.
 - `SignedQueueTableauWeight[lambda, tableau, vars, {q, t}]` returns the weight factor, monomial, and combined contribution for a tableau.
 - `SignedQueueTableauPolynomial[lambda, tableau, vars, {q, t}]` evaluates $\mathrm{wt}(\phi) x^\phi$.
 - `SignedQueueTableauType[lambda, tableau, n]` computes the composition type induced by the bottom row.
@@ -67,4 +67,4 @@ The package now exposes the factorisation tools from Section 8 of the reference 
 
 - Implement explicit signed multiline queue enumerators, including ball and pairing weights, so the package can sample and sum over queue configurations directly.
 - Encode the algebraic/combinatorial recursion for $f^*_\mu$ described in Sections 4–6 to compute higher-rank polynomials iteratively.
-- Provide the signed queue tableaux model (Section 7) together with translation utilities between tableaux and multiline queues.
+- Provide constructors that map between signed tableaux and signed multiline queues, exposing the bijection \(\Tab\) as programmable transforms.
