@@ -51,7 +51,7 @@ The package now exposes the factorisation tools from Section 8 of the reference 
 
 ## Integral Forms
 
-- `HookProduct[lambda, {q, t}]` computes the hook normalisation $\hook_\lambda$.
+- `HookProduct[lambda, {q, t}]` computes the hook normalisation $\text{hook}_\lambda$.
 - `IntegralInterpolationMacdonald[lambda, vars, {q, t}]` returns $J^*_\lambda$.
 - `IntegralInterpolationASEP[mu, vars, {q, t}]` multiplies $f^*_\mu$ by the same hook factor.
 

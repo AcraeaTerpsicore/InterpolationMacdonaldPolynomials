@@ -37,6 +37,6 @@ All notation follows the reference paper.
 
 - The hook normalisation satisfies
   $$
-  \hook_\lambda = \prod_{(i,j)\in\lambda} \left(1 - q^{\lambda'_j - i} t^{\lambda_i - j + 1}\right),
+  \text{hook}_\lambda = \prod_{(i,j)\in\lambda} \left(1 - q^{\lambda'_j - i} t^{\lambda_i - j + 1}\right),
   $$
-  so that $J^*_\lambda = \hook_\lambda P^*_\lambda$ and $\hook_\lambda f^*_\mu$ are the integral forms.
+  so that $J^*_\lambda = \text{hook}_\lambda P^*_\lambda$ and $\text{hook}_\lambda f^*_\mu$ are the integral forms.
