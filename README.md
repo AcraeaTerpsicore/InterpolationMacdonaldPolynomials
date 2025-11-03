@@ -51,9 +51,17 @@ The package now exposes the factorisation tools from Section 8 of the reference 
 
 ## Integral Forms
 
-- `HookProduct[lambda, {q, t}]` computes the hook normalisation $\text{hook}\lambda$.
+- `HookProduct[lambda, {q, t}]` computes the hook normalisation $\hook_\lambda$.
 - `IntegralInterpolationMacdonald[lambda, vars, {q, t}]` returns $J^*_\lambda$.
 - `IntegralInterpolationASEP[mu, vars, {q, t}]` multiplies $f^*_\mu$ by the same hook factor.
+
+## Signed Queue Tableaux
+
+- `SignedQueueTableauQ[lambda, tableau]` validates the doubled-diagram filling against the rules in Section 7.
+- `SignedQueueTableauStatistics[lambda, tableau, {q, t}]` exposes $\maj$, $\coinv$, $\emp$, and the negative count together with unrestricted cells.
+- `SignedQueueTableauWeight[lambda, tableau, vars, {q, t}]` returns the weight factor, monomial, and combined contribution for a tableau.
+- `SignedQueueTableauPolynomial[lambda, tableau, vars, {q, t}]` evaluates $\mathrm{wt}(\phi) x^\phi$.
+- `SignedQueueTableauType[lambda, tableau, n]` computes the composition type induced by the bottom row.
 
 ## Future Extensions
 
