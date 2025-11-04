@@ -85,7 +85,7 @@ ClearAll[
   signedQueueTableauAttacks, signedQueueTableauMaj, signedQueueTableauCoinv,
   signedQueueTableauEmp, signedQueueTableauNegative, signedQueueTableauStats,
   SignedMultilineQueueFromTableau, SignedMultilineQueueToTableau,
-  SignedMultilineQueueQ];
+  SignedMultilineQueueQ, SignedMultilineQueueEnumerate, SignedMultilineQueueWeight];
 
 kVector[mu_List] := Module[{n = Length[mu]}, Table[
     Count[mu[[;; i - 1]], _?(# > mu[[i]] &)] +
@@ -797,6 +797,14 @@ SignedMultilineQueueToTableau[queue_Association] :=
     data
   ];
 
+ClearAll[InterpolationMacdonald`SignedMultilineQueueWeight];
+InterpolationMacdonald`SignedMultilineQueueWeight[queue_Association, vars_: Automatic, params_: Automatic] :=
+  Module[{lambda = Lookup[queue, "Lambda", $Failed], tableau},
+    If[lambda === $Failed, Return[$Failed]];
+    tableau = SignedMultilineQueueToTableau[queue];
+    SignedQueueTableauWeight[lambda, tableau, vars, params]
+  ];
+
 SignedMultilineQueueQ[queue_] :=
   Module[{lambda, strands, rows, cols, structuralOK},
     If[!AssociationQ[queue] || !KeyExistsQ[queue, "Lambda"] ||
@@ -826,6 +834,72 @@ SignedMultilineQueueQ[queue_] :=
      ];
     If[!structuralOK, Return[False]];
     SignedQueueTableauQ[lambda, SignedMultilineQueueToTableau[queue]]
+  ];
+
+SignedMultilineQueueEnumerate::nomatch =
+  "The partition `1` does not contain a column structure compatible with the type `2`.";
+
+ClearAll[InterpolationMacdonald`SignedMultilineQueueEnumerate];
+InterpolationMacdonald`SignedMultilineQueueEnumerate[lambda_List, mu_List, vars_: Automatic, params_: Automatic] :=
+  Module[{n = Length[mu], rows = tableauRows[lambda], cols = tableauColumns[lambda],
+    results = {}, normParams, columnLabels, signSpaces, fillColumn, tableau, queue,
+    weight, columnsByHeight, labelsByHeight, heights},
+    If[cols =!= n, Return[$Failed]];
+    columnsByHeight = GroupBy[Range[n], lambda[[#]] &];
+    labelsByHeight = GroupBy[Range[n], mu[[#]] &];
+    columnLabels = Table[0, {n}];
+    Do[
+      With[{colsList = Sort[columnsByHeight[height]],
+        labelsList = Sort[Lookup[labelsByHeight, height, {}]]},
+        If[Length[colsList] =!= Length[labelsList],
+          Message[SignedMultilineQueueEnumerate::nomatch, lambda, mu];
+          Return[{}]
+        ];
+        Do[columnLabels[[colsList[[k]]]] = labelsList[[k]], {k, Length[colsList]}];
+      ],
+      {height, Keys[columnsByHeight]}
+    ];
+    normParams = normalizeParams[params];
+    signSpaces = Table[
+        With[{height = lambda[[col]]},
+          If[height <= 0,
+            {{}},
+            Tuples[{-1, 1}, {height}]
+          ]
+        ],
+        {col, n}
+      ];
+    fillColumn[data_, col_, label_, signs_] := Fold[
+        With[{classicRow = 2*#2 - 1, primedRow = 2*#2},
+          ReplacePart[
+            ReplacePart[#1, {classicRow, col} -> label],
+            {primedRow, col} -> signs[[#2]]*label
+          ]
+        ]&,
+        data,
+        Range[Length[signs]]
+      ];
+    Do[
+      tableau = Table[ConstantArray[Null, {n}], {rows}];
+      Do[
+        If[lambda[[col]] > 0,
+          tableau = fillColumn[tableau, col, columnLabels[[col]],
+            signChoice[[col]]]
+        ],
+        {col, n}
+      ];
+      If[SignedQueueTableauQ[lambda, tableau],
+        queue = SignedMultilineQueueFromTableau[lambda, tableau];
+        weight = InterpolationMacdonald`SignedMultilineQueueWeight[queue, vars, normParams];
+        AppendTo[results, <|
+           "Queue" -> queue,
+           "Tableau" -> tableau,
+           "Weight" -> weight
+         |>]
+      ],
+      {signChoice, Tuples[signSpaces]}
+    ];
+    DeleteDuplicatesBy[results, #["Queue"] &]
   ];
 
 (* -- interpolation ASEP and Macdonald polynomials ------------------------- *)

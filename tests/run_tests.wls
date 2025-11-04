@@ -96,9 +96,14 @@ test21 = zeroQ[
    SignedQueueTableauPolynomial[lambdaSample, SignedMultilineQueueToTableau[queueSample], vars2] - 
     SignedQueueTableauPolynomial[lambdaSample, tableauSample, vars2]];
 
+queuesEnumerated = SignedMultilineQueueEnumerate[{1, 1}, {1, 1}, vars2];
+test22 = zeroQ[
+   Total[Lookup[#, "Weight"]["Polynomial"] & /@ queuesEnumerated] - 
+    InterpolationASEP[{1, 1}, vars2]];
+
 results = {test1, test2, test3, test4, test5, test6, test7, test8, test9,
    test10, test11, test12, test13, test14, test15, test16, test17, test18,
-   test19, test20, test21};
+   test19, test20, test21, test22};
 
 If[AllTrue[results, TrueQ],
   Print["TESTS PASSED"],

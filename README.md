@@ -64,8 +64,9 @@ The package now exposes the factorisation tools from Section 8 of the reference 
 - `SignedQueueTableauType[lambda, tableau, n]` computes the composition type induced by the bottom row.
 - `SignedMultilineQueueFromTableau[lambda, tableau]` records the strand data of a signed multiline queue obtained from a tableau.
 - `SignedMultilineQueueToTableau[queue]` reconstructs the tableau entries from the strand-based queue representation.
+- `SignedMultilineQueueEnumerate[lambda, mu, vars, {q, t}]` lists every signed multiline queue of the given type together with its weight data, enabling direct summations.
+- `SignedMultilineQueueWeight[queue, vars, {q, t}]` evaluates the ball-and-pairing contribution for a specific queue.
 
 ## Future Extensions
 
-- Implement explicit signed multiline queue enumerators, including ball and pairing weights, so the package can sample and sum over queue configurations directly.
 - Encode the algebraic/combinatorial recursion for $f^*_\mu$ described in Sections 4–6 to compute higher-rank polynomials iteratively.
