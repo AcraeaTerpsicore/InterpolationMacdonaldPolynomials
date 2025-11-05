@@ -62,6 +62,7 @@ The package now exposes the factorisation tools from Section 8 of the reference 
 - `SignedQueueTableauWeight[lambda, tableau, vars, {q, t}]` returns the weight factor, monomial, and combined contribution for a tableau.
 - `SignedQueueTableauPolynomial[lambda, tableau, vars, {q, t}]` evaluates $\mathrm{wt}(\phi) x^\phi$.
 - `SignedQueueTableauType[lambda, tableau, n]` computes the composition type induced by the bottom row.
+- `SignedQueueTableauEnumerate[lambda, mu, vars, {q, t}]` enumerates tableaux of a fixed shape and type with their weights and statistics.
 - `SignedMultilineQueueFromTableau[lambda, tableau]` records the strand data of a signed multiline queue obtained from a tableau.
 - `SignedMultilineQueueToTableau[queue]` reconstructs the tableau entries from the strand-based queue representation.
 - `SignedMultilineQueueEnumerate[lambda, mu, vars, {q, t}]` lists every signed multiline queue of the given type together with its weight data, enabling direct summations.
@@ -70,3 +71,5 @@ The package now exposes the factorisation tools from Section 8 of the reference 
 ## Future Extensions
 
 - Encode the algebraic/combinatorial recursion for $f^*_\mu$ described in Sections 4–6 to compute higher-rank polynomials iteratively.
+- Implement the signed two-line queue recursion (Section 6) as a dynamic programming engine for assembling multiline queue weights without exhaustive enumeration.
+- Provide signed queue tableau enumerators (Section 7) that output the full statistics $(\text{maj},\text{coinv},\text{emp},\text{negative})$ and associated monomials for a given shape and type.

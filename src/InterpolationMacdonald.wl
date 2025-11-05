@@ -56,6 +56,9 @@ SignedQueueTableauWeight::usage =
 SignedQueueTableauType::usage =
   "SignedQueueTableauType[lambda, tableau, n] determines the composition type defined in Section 7.";
 
+SignedQueueTableauEnumerate::usage =
+  "SignedQueueTableauEnumerate[lambda, mu, vars, {q, t}] lists signed queue tableaux of the given shape and type together with their statistics and weights.";
+
 SignedMultilineQueueQ::usage =
   "SignedMultilineQueueQ[queue] recognises the strand-based representation of signed multiline queues.";
 
@@ -85,7 +88,8 @@ ClearAll[
   signedQueueTableauAttacks, signedQueueTableauMaj, signedQueueTableauCoinv,
   signedQueueTableauEmp, signedQueueTableauNegative, signedQueueTableauStats,
   SignedMultilineQueueFromTableau, SignedMultilineQueueToTableau,
-  SignedMultilineQueueQ, SignedMultilineQueueEnumerate, SignedMultilineQueueWeight];
+  SignedMultilineQueueQ, SignedMultilineQueueEnumerate, SignedMultilineQueueWeight,
+  SignedQueueTableauEnumerate];
 
 kVector[mu_List] := Module[{n = Length[mu]}, Table[
     Count[mu[[;; i - 1]], _?(# > mu[[i]] &)] +
@@ -900,6 +904,22 @@ InterpolationMacdonald`SignedMultilineQueueEnumerate[lambda_List, mu_List, vars_
       {signChoice, Tuples[signSpaces]}
     ];
     DeleteDuplicatesBy[results, #["Queue"] &]
+  ];
+
+SignedQueueTableauEnumerate[lambda_List, mu_List, vars_: Automatic, params_: Automatic] :=
+  Module[{queues = SignedMultilineQueueEnumerate[lambda, mu, vars, params], stats},
+    Table[
+      stats = SignedQueueTableauStatistics[lambda, entry["Tableau"], params];
+      If[stats === $Failed, Nothing,
+        <|
+          "Tableau" -> entry["Tableau"],
+          "Queue" -> entry["Queue"],
+          "Statistics" -> stats,
+          "Weight" -> entry["Weight"]
+        |>
+      ],
+      {entry, queues}
+    ]
   ];
 
 (* -- interpolation ASEP and Macdonald polynomials ------------------------- *)
