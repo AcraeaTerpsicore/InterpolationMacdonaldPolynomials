@@ -72,4 +72,4 @@ The package now exposes the factorisation tools from Section 8 of the reference 
 
 - Encode the algebraic/combinatorial recursion for $f^*_\mu$ described in Sections 4–6 to compute higher-rank polynomials iteratively.
 - Implement the signed two-line queue recursion (Section 6) as a dynamic programming engine for assembling multiline queue weights without exhaustive enumeration.
-- Provide signed queue tableau enumerators (Section 7) that output the full statistics $(\text{maj},\text{coinv},\text{emp},\text{negative})$ and associated monomials for a given shape and type.
+- Develop specialised tooling for the $q=1$ probabilistic limit (Section 8), including evaluation of $t$-Push TASEP observables from factorised formulas.
