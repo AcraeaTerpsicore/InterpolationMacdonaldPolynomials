@@ -922,6 +922,17 @@ SignedQueueTableauEnumerate[lambda_List, mu_List, vars_: Automatic, params_: Aut
     ]
   ];
 
+ClearAll[InterpolationMacdonald`TPushASEPPartialObservable];
+InterpolationMacdonald`TPushASEPPartialObservable[lambda_List, subset_List, u_, t_] :=
+  Module[{n = Length[lambda], vars},
+    vars = Table[If[MemberQ[subset, i], u, 1], {i, n}];
+    InterpolationASEPPartialProduct[lambda, subset, vars, t]
+  ];
+
+ClearAll[InterpolationMacdonald`TPushMacdonaldObservable];
+InterpolationMacdonald`TPushMacdonaldObservable[lambda_List, vars_: Automatic, t_] :=
+  InterpolationMacdonaldQOne[lambda, vars, t];
+
 (* -- interpolation ASEP and Macdonald polynomials ------------------------- *)
 
 InterpolationASEP[mu_List, vars_: Automatic, params_: Automatic] :=

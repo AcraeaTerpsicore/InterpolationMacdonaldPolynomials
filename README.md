@@ -48,6 +48,8 @@ The package now exposes the factorisation tools from Section 8 of the reference 
 - `InterpolationElementaryStar[k, vars, t]` evaluates $e^*_k$.
 - `InterpolationASEPPartialSum[lambda, subset, vars, t]` forms the $q=1$ partial sum over the orbit, while `InterpolationASEPPartialProduct[...]` returns the factorised expression from Theorem 8.1.
 - `InterpolationMacdonaldQOne[lambda, vars, t]` recovers $P^*_\lambda$ via the product of $e^*_k$ terms.
+- `TPushASEPPartialObservable[lambda, subset, u, t]` evaluates the $t$-Push TASEP generating function for a chosen subset in the $q=1$ limit.
+- `TPushMacdonaldObservable[lambda, vars, t]` evaluates the fully factorised $P^*_\lambda$ specialised to occupation variables for $t$-Push observables.
 
 ## Integral Forms
 
